@@ -1,0 +1,29 @@
+# ACCESOS de lectura SQL para service desk
+  - Introducción y consideraciones importantes:
+    - Los accesos son de solo lectura. Esto para evitar que se pudiera presentar cualquier eventualidad a la hora de borrar o modificar datos que se consideran críticos para la operación de las tiendas, además de que no se tiene el control necesario, dentro de la base de datos, para saber quién hizo qué y por qué.
+    - Dicho esto, el acceso de solo lectura debería de permitir al operador obtener información y contexto, los cuales son cruciales a la hora de resolver las incidencias que se presentan día con día, durante la operación de las tiendas.
+    - Cabe destacar, que, dado que los accesos que se tienen contemplan la lectura a cualquier registro de la tabla. Con esto, el operador en cuestión puede armar sus propias herramientas de consulta, las cuales le pueden ayudar a la hora de crear reportes, obtener información y contexto de la operación de la tienda en un flujo determinado o llenar gaps que pudieran existir dado a fallas en la arquitectura misma de la aplicación (IE reenvió de correos de aprobación de regional para transferencias entre tiendas).
+      - Para creación y utilización de estas herramientas, podemos crear y guardar archivos con extensión `.sql`, los cuales podremos cargar cuando los volvamos a necesitar.
+      - En caso de que se detecte una necesidad en donde el operador requiera modificar datos por una incidencia que se presenta de manera seguida, solicitar la creación de un procedimiento almacenado que resuelva esta necesidad al equipo de Arvolution.
+    - La información contenida en la base de datos de aplicativo es de caracter estrictamente sensible, por lo cual dicha información deberá de ser trabajada de manera acorde.
+  - Estructura de la información
+    - La base de datos de datos de aplicativo goza de una estructura de la información bastante sencilla de entender, ya que la mayoría de los flujos de la aplicación comparten entre sí un par de características, siendo la primera el número de guía, de rastreo o de folio y la segunda, los códigos que involucra un número de rastreo en particular.
+    - Cada flujo (recibo de cedis, recibo de proveedor, devoluciones, etc) cuenta con una estructura en cascada.
+      - En la cima del flujo, tenemos un par de tablas principales, las cuales guardan la información del folio o número de rastreo del proceso que se está llevando a cabo, además de otros datos menos importantes.
+      - A la mitad de la cascada, las tablas que guardan la información de los códigos relacionados a un número de rastreo en particular.
+      - Al fondo de la cascada tenemos todas las tablas relacionales y catálogos, las cuales hacen que la información contenida en los niveles superiores empiece a cobrar sentido. La información que se guarda en estas tablas se refiere a la información particular de proveedor, de determinante o tienda, de producto, de stock, de categoría, de departamento, etc.
+    - Los nombres de los campos y las tablas se encuentran en inglés. A continuación se encuentran la terminología y las traducciones necesarias para poder hacer un correcto uso de la información contenida en la base de datos.
+      - Conceptos:
+        - `purchaseorder`: Órden de compra. Concepto principal del flujo de recibo de proveedor directo.
+        - `returnorder`: Órden de devolución. Concepto principal del flujo de devoluciones.
+        - `shipment`: Embarque. Concepto principal del flujo de recibo de cedis.
+        - `transfer`: Transferencia. Concepto principal del flujo de transferencias internas y externas.
+        - `waste`: Merma. Concepto principal del flujo de mermas.
+        - `merchandiseexchange`: Intercambio de mercancía. Concepto principal del flujo de cambios físicos.
+        - `locks`: Marchamos. Concepto auxiliar en el flujo de recibo de cedis.
+        - `user`: Usuario. Se utiliza en prácticamente todos los flujos.
+        - `location`: Determinante. Concepto principal que nos habla de la tienda o determinante en donde se lleva a cabo un flujo.
+        - `supplier`: Proveedor. Concepto secundario. Nos habla del proveedor de la mercancía a recibir, devolver, según sea el flujo.
+        - `productquantity`: Cantidad de producto. Concepto principal en prácticamente todos los flujos. Nos habla de la relación entre un código EAN/SAP con la capacidad de empaque y unidad de medida. Para fines prácticos, se refiere al código de un producto.
+        - `product`: Producto. Concepto principal que nos habla de la descripción o nombre de un producto.
+        - `stock`: Stock de un producto. Concepto secundario. Nos habla de la tabla cache en la cual se guardan todos los datos de sap de un código, para una determinante en particular.
